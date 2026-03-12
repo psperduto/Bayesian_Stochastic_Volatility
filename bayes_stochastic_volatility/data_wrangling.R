@@ -2,7 +2,7 @@ library(quantmod)
 library(moments)
 #pull stock price via quantmod
 #compute log returns for specified ticker on yfinance when we pass the ticker name
-LogReturn <- function(ticker = "SPY", diagonisticInformation = FALSE) {
+LogReturn <- function(ticker = "SPY") {
   ticker_data <-getSymbols(ticker, src="yahoo", auto.assign = FALSE)
   ticker_price <- Cl(ticker_data)
   ticker_lr <- diff(log(ticker_price)) |> na.omit()
@@ -116,6 +116,7 @@ Distribution_Summary <- function(fit_models) {
   return(output)
 }
 Plot_Models <- function(log_return, fit_models) {
+  log_return <- as.numeric(log_return)
   hist(
     log_return,
     breaks = 60, 
@@ -158,7 +159,7 @@ Plot_Models <- function(log_return, fit_models) {
     )
   legend(
     "topright",
-    c("Normal", "Cauchy", "T-Distriubtion"),
+    c("Normal", "Cauchy", "T-Distribution"),
     col = c("blue", "green" ,"red"),
     lwd = 2,
     cex = 0.8
