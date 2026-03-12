@@ -209,3 +209,27 @@ ACF_Diagnostics <- function(log_return) {
   par(mfrow = c(1,1))
   
 }
+#plot absolute value of log returns
+Plot_Absolute_Returns <- function(log_return) {
+  par(mfrow = c(1,2))
+  plot(
+    index(log_return),
+    abs(as.numeric(log_return)),
+    type = "l",
+    main = "Absolute Log Returns",
+    xlab = "T",
+    ylab = "abs(Log Return)"
+  )
+  
+  
+  
+  plot(
+    index(log_return^2),
+    abs(as.numeric(log_return^2)),
+    type = "l",
+    main = "Absolute Log Returns",
+    xlab = "T",
+    ylab = "Squared Log Return"
+  )
+  par(mfrow = c(1,1))
+}
