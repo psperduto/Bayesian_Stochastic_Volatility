@@ -186,19 +186,16 @@ QQplot_normal_returns <- function(log_return) {
 #Plot log returns over time = T
 Plot_Returns <- function(log_return) {
   
-  r <- as.numeric(log_return)
-  
   plot(
-    r,
+    index(log_return),
+    as.numeric(log_return),
     type = "l",
     main = "Log Returns",
-    xlab = "t",
+    xlab = "Time",
     ylab = "Log Return"
   )
-  
-  abline(h = 0, col = "darkgrey", lwd = 2)
+   abline(h = 0, col = "lightgrey", lwd = 2)
 }
-
 #!!Auto regressive plots to check assumptions for AR(1) & Garch
 ACF_Diagnostics <- function(log_return) {
   
