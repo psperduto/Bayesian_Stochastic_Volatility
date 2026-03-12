@@ -1,48 +1,167 @@
 library(quantmod)
 library(moments)
-# Quantmod is a library that lets us pull data through yahoo finance
-
-getLogReturn <- function(stockName = "SPY", diagonisticInformation = FALSE) {
+#pull stock price via quantmod
+#compute log returns for specified ticker on yfinance when we pass the ticker name
+LogReturn <- function(ticker = "SPY", diagonisticInformation = FALSE) {
+  ticker_data <-getSymbols(ticker, src="yahoo", auto.assign = FALSE)
+  ticker_price <- Cl(ticker_data)
+  ticker_lr <- diff(log(ticker_price)) |> na.omit()
   
-  getSymbols(stockName, src="yahoo")
-  STOCK_price <- Cl(WTI)
-  STOCK_log_return <- diff(log(SPY_price)) |> na.omit()
-  
-  output <- list(Price = STOCK_price, 
-                 LogReturn = STOCK_log_return)
-  
-  if (diagonisticInformation == TRUE) {
-    plot(STOCK_log_return)
-    
-    #plot the log_returns against a normal model
-    hist(STOCK_log_return,
-         breaks = 50,
-         probability = TRUE,
-         xlim = c(-0.1,0.1),
-         main = paste("Histogram of log returns of",stockName))
-    
-    mu <- mean(STOCK_log_return)
-    sigma <- sd(STOCK_log_return)
-    
-    curve(dnorm(x, mean = mu, sd = sigma),
-          from = -0.1,
-          to = 0.1,
-          col = "red",
-          lwd = 2,
-          add = TRUE)
-    
-    acf(STOCK_log_return)
-    acf(STOCK_log_return^2)
-    
-    
-    qqnorm(STOCK_log_return)
-    qqline(STOCK_log_return)
-    
-    
-    kurtosis(STOCK_log_return)
-    skewness(STOCK_log_return)    
-  }
-  
+  output <- list(
+    ticker = ticker,
+    price = ticker_price,
+    log_return = ticker_lr
+    )
   return(output)
+}
+#Fit normal model to log returns
+
+fit_normal <- function(log_return) {
+  log_return <- as.numeric(log_return)
+  T <- length(log_return)
+  
+  mu_hat <- mean(log_return)
+  sigma_hat <- sd(log_return)
+
+  log_likelihood <- sum(dnorm(log_return, mean = mu_hat,sd = sigma_hat, log = TRUE))
+  
+  output <- list(
+    model = "Normal",
+    mu = mu_hat,
+    sigma = sigma_hat,
+    degree_of_freedom = NA,
+    log_likelihood = log_likelihood,
+    T = T
+  )
+  return(output)
+}
+
+#!! the cauchy does not have finite moments so we must aproximate this distriubtion's maximum likelihood
+fit_cauchy <- function(log_return) {
+  log_return <- as.numeric(log_return)
+  
+  T <- length(log_return)
+  location_hat <- median(log_return)
+  scale_hat <- IQR(log_return) / 2
+  log_likelihood <- sum(dcauchy(log_return, location = location_hat, scale = scale_hat, log = TRUE))
+  output <- list(
+    model = "Cauchy Aprox",
+    mu = location_hat,
+    sigma = scale_hat,
+    degree_of_freedom = NA,
+    log_likelihood = log_likelihood,
+    T=T
+    )
+  return(output)
+}
+
+#fit the t-dsit to log_returns
+fit_t <- function(log_return) {
+  log_return <- as.numeric(log_return)
+  
+  T <- length(log_return)
+  mu_hat <- mean(log_return)
+  sigma_hat <- sd(log_return)
+  kurtosis_hat <- kurtosis(log_return)
+  degree_of_freedom_hat <- 4 + 6/(kurtosis_hat - 3)
+   
+  log_likelihood <- sum(
+     dt((log_return - mu_hat) / sigma_hat, 
+        df = degree_of_freedom_hat,
+        log = TRUE) - log(sigma_hat))
+  
+   output <- list(
+     model = "T-Distribution",
+     mu = mu_hat,
+     sigma = sigma_hat,
+     degree_of_freedom = degree_of_freedom_hat,
+     log_likelihood = log_likelihood,
+     T = T
+   )
+   return(output)
+}
+#collect all fitted distributions collectively for single log_return variable
+Fit_Distributions <- function(log_return) {
+  list(
+    Normal = fit_normal(log_return),
+    Cauchy = fit_cauchy(log_return),
+    T_Distribution = fit_t(log_return)
+  )
+}
+
+Distribution_Summary <- function(fit_models) {
+  
+  output <- data.frame(
+    model = c(
+      fit_models$Normal$model,
+      fit_models$Cauchy$model,
+      fit_models$T_Distribution$model
+    ),
+    mu = c(
+      fit_models$Normal$mu,
+      fit_models$Cauchy$mu,
+      fit_models$T_Distribution$mu
+    ),
+    sigma = c(
+      fit_models$Normal$sigma,
+      fit_models$Cauchy$sigma,
+      fit_models$T_Distribution$sigma
+    ),
+    log_likelihood = c(
+      fit_models$Normal$log_likelihood,
+      fit_models$Cauchy$log_likelihood,
+      fit_models$T_Distribution$log_likelihood
+    )
+  )
+  return(output)
+}
+Plot_Models <- function(log_return, fit_models) {
+  hist(
+    log_return,
+    breaks = 60, 
+    probability = TRUE,
+    xlim = c(-0.15,0.15),
+    main = "Fitted Log Returns",
+    xlab = "Log Returns"
+  )
+  curve(
+    dnorm(
+      x,
+      mean = fit_models$Normal$mu,
+      sd = fit_models$Normal$sigma),
+    from = -0.15,
+    to = 0.15,
+    col = "blue",
+    lwd = 2,
+    add = TRUE
+    )
+  curve(
+    dcauchy(
+      x,
+      location = fit_models$Cauchy$mu,
+      scale = fit_models$Cauchy$sigma),
+    from = -0.15,
+    to = 0.15,
+    col = "green",
+    lwd = 2,
+    add = TRUE
+  )
+  curve(
+    dt(
+      (x - fit_models$T_Distribution$mu)/ fit_models$T_Distribution$sigma,
+      df = fit_models$T_Distribution$degree_of_freedom) / fit_models$T_Distribution$sigma,
+    from = -0.15,
+    to = 0.15,
+    col = "red",
+    lwd = 2,
+    add = TRUE
+    )
+  legend(
+    "topright",
+    c("Normal", "Cauchy", "T-Distriubtion"),
+    col = c("blue", "green" ,"red"),
+    lwd = 2,
+    cex = 0.8
+  )
 }
 
