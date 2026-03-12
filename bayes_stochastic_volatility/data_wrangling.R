@@ -117,7 +117,7 @@ Distribution_Summary <- function(fit_models) {
 }
 Plot_Models <- function(log_return, fit_models) {
   log_return <- as.numeric(log_return)
-  xlim <- quantile(log_return, c(0.005,0.995))
+  xlim <- as.numeric(quantile(log_return, c(0.005,0.995)))
                   
   hist(
     log_return,
