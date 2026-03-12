@@ -217,9 +217,6 @@ Plot_Absolute_Returns <- function(log_return) {
     xlab = "T",
     ylab = "abs(Log Return)"
   )
-  
-  
-  
   plot(
     index(log_return^2),
     abs(as.numeric(log_return^2)),
@@ -230,3 +227,5 @@ Plot_Absolute_Returns <- function(log_return) {
   )
   par(mfrow = c(1,1))
 }
+
+
