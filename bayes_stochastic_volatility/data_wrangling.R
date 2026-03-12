@@ -118,12 +118,15 @@ Distribution_Summary <- function(fit_models) {
 Plot_Models <- function(log_return, fit_models) {
   log_return <- as.numeric(log_return)
   xlim <- as.numeric(quantile(log_return, c(0.005,0.995)))
-                  
+  h <- hist(log_return, breaks = 60, probability = TRUE, plot = FALSE)
+  ylim <- c(0, max(h$density) * 1.5)
+  
   hist(
     log_return,
     breaks = 60, 
     probability = TRUE,
     xlim = xlim,
+    ylim = ylim,
     main = "Fitted Log Returns",
     xlab = "Log Returns"
   )
@@ -164,7 +167,6 @@ Plot_Models <- function(log_return, fit_models) {
     c("Normal", "Cauchy", "T-Distribution"),
     col = c("blue", "green" ,"red"),
     lwd = 2,
-    cex = 0.8,
     bty = "n"
   )
 }
