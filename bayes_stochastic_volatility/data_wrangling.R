@@ -117,11 +117,13 @@ Distribution_Summary <- function(fit_models) {
 }
 Plot_Models <- function(log_return, fit_models) {
   log_return <- as.numeric(log_return)
+  xlim <- quantile(log_return, c(0.005,0.995))
+                  
   hist(
     log_return,
     breaks = 60, 
     probability = TRUE,
-    xlim = c(-0.15,0.15),
+    xlim = xlim,
     main = "Fitted Log Returns",
     xlab = "Log Returns"
   )
@@ -130,8 +132,8 @@ Plot_Models <- function(log_return, fit_models) {
       x,
       mean = fit_models$Normal$mu,
       sd = fit_models$Normal$sigma),
-    from = -0.15,
-    to = 0.15,
+    from = xlim[1],
+    to = xlim[2],
     col = "blue",
     lwd = 2,
     add = TRUE
@@ -141,8 +143,8 @@ Plot_Models <- function(log_return, fit_models) {
       x,
       location = fit_models$Cauchy$mu,
       scale = fit_models$Cauchy$sigma),
-    from = -0.15,
-    to = 0.15,
+    from = xlim[1],
+    to = xlim[2],
     col = "green",
     lwd = 2,
     add = TRUE
@@ -151,8 +153,8 @@ Plot_Models <- function(log_return, fit_models) {
     dt(
       (x - fit_models$T_Distribution$mu)/ fit_models$T_Distribution$sigma,
       df = fit_models$T_Distribution$degree_of_freedom) / fit_models$T_Distribution$sigma,
-    from = -0.15,
-    to = 0.15,
+    from = xlim[1],
+    to = xlim[2],
     col = "red",
     lwd = 2,
     add = TRUE
@@ -162,7 +164,8 @@ Plot_Models <- function(log_return, fit_models) {
     c("Normal", "Cauchy", "T-Distribution"),
     col = c("blue", "green" ,"red"),
     lwd = 2,
-    cex = 0.8
+    cex = 0.8,
+    bty = "n"
   )
 }
 
