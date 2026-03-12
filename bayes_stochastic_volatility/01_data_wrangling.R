@@ -172,14 +172,40 @@ Plot_Models <- function(log_return, fit_models) {
 }
 
 #Function for QQ plots of log returns
-QQplot_returns <- function(log_return) {
+QQplot_normal_returns <- function(log_return) {
   log_return <- as.numeric(log_return)
   
   qqnorm(
     log_return,
     main = " Q-Q Log Returns",
-    pch = 20,
+    pch = 19,
     cex = 0.5
   )
-  qqline(log_return, lwd =2, col = "blue")
+  qqline(log_return, lwd =1, col = "blue")
+}
+#Plot log returns over time = T
+Plot_Returns <- function(log_return) {
+  
+  r <- as.numeric(log_return)
+  
+  plot(
+    r,
+    type = "l",
+    main = "Log Returns",
+    xlab = "t",
+    ylab = "Log Return"
+  )
+  
+  abline(h = 0, col = "darkgrey", lwd = 2)
+}
+
+#!!Auto regressive plots to check assumptions for AR(1) & Garch
+ACF_Diagnostics <- function(log_return) {
+  
+  r <- as.numeric(log_return)
+  par(mfrow = c(1,2))
+  acf(r,main = "ACF of Log Returns")
+  acf(r^2, main = "ACF of squared Log Returns")
+  par(mfrow = c(1,1))
+  
 }
