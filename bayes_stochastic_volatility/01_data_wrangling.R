@@ -36,7 +36,7 @@ fit_normal <- function(log_return) {
   return(output)
 }
 
-#!! the cauchy does not have finite moments so we must aproximate this distriubtion's maximum likelihood
+#!! the Cauchy does not have finite moments so we must approximate this distribution's maximum likelihood
 fit_cauchy <- function(log_return) {
   log_return <- as.numeric(log_return)
   
