@@ -1,45 +1,35 @@
 library(MASS)
 library(rugarch)
 
-
-
-# Lets works from SPY
-#We already know log return volatility isnt normal.
-normalModelLikelihood <- function(logReturns) {
-  mu_hat <- mean(logReturns)
-  sigma_hat <- sd(logReturns)
-  loglik_norm <- sum(dnorm(logReturns,
-                           mean = mu_hat,
-                           sd = sigma_hat,
-                           log = TRUE))
-  return(loglik_norm)
+#Fit Normal Garch
+Fit_Garch_Norm <- function(log_return) {
+  r <- as.numeric(log_return)
+  
+  Garch_Normal_Specifacations <- ugarchspec(
+    variance.model = list(
+      model = "sGARCH",
+      garchOrder = c(1,1)
+    ),
+    mean.model = list(
+      armaOrder = c(0,0),
+      include.mean = FALSE
+    ),
+    distribution.model = "norm"
+  )
+  
+  garch_fit_norm <- ugarchfit(
+    spec = Garch_Normal_Specifacations,
+    data =r
+  )
+  output <- list(
+    model = "GARCH Normal Model",
+    spec = Garch_Normal_Specifacations,
+    fit = garch_fit_norm,
+    log_likelihood = likelihood(garch_fit_norm)
+  )
+  return(output)
 }
 
-tModelLikelihood <- function(logReturns) {
-  fit_t <- fitdistr(logReturns, "t")
-  
-  mu_t <- fit_t$estimate["m"]
-  sigma_t <- fit_t$estimate["s"]
-  nu_t <- fit_t$estimate["df"]
-  
-  loglik_t <- sum(dt((logReturns - mu_t)/sigma_t,
-                     df = nu_t,
-                     log = TRUE) - log(sigma_t))
-  return(loglik_t)
-}
-
-cauchyModelLikelihood <- function(logReturns) {
-  fit_cauchy <- fitdistr(logReturns, "cauchy")
-  
-  mu_c <- fit_cauchy$estimate["location"]
-  gamma_c <- fit_cauchy$estimate["scale"]
-  
-  loglik_cauchy <- sum(dcauchy(logReturns,
-                               location = mu_c,
-                               scale = gamma_c,
-                               log = TRUE))
-  return(loglik_cauchy)
-}
 
 # garch analysis, AR1 model
 garch_fit_norm <- ugarchfit(
