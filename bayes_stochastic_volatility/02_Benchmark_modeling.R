@@ -30,6 +30,25 @@ Fit_Garch_Norm <- function(log_return) {
   return(output)
 }
 
+# Plot_GARCH_Volatility
+# Plot fitted conditional volatility from a GARCH model
+
+Plot_GARCH_Volatility <- function(garch_model, log_return) {
+  
+  sigma_t <- sigma(garch_model$fit)
+  t <- index(log_return)
+  
+  plot(
+    t,
+    sigma_t,
+    type = "l",
+    main = paste(garch_model$model, "Conditional Volatility"),
+    xlab = "Time",
+    ylab = expression(hat(sigma)[t])
+  )
+  
+}
+
 
 # garch analysis, AR1 model
 garch_fit_norm <- ugarchfit(
