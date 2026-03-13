@@ -1,6 +1,8 @@
 library(MASS)
 library(rugarch)
 
+
+
 # Lets works from SPY
 #We already know log return volatility isnt normal.
 normalModelLikelihood <- function(logReturns) {
