@@ -14,6 +14,21 @@ LogReturn <- function(ticker = "SPY") {
     )
   return(output)
 }
+
+#General summary for log returns
+LR_Summary <- function(log_return) {
+  r <- as.numeric(log_return)
+  output <- data.frame(
+    mean = mean(r),
+    sd = sd(r),
+    skewness = moments::skewness(r),
+    kurtosis = moments::kurtosis(r),
+    min_max = c(min(r),max(r)),
+    T = length(r)
+  )
+  return(output)
+}
+
 #Fit normal model to log returns
 
 fit_normal <- function(log_return) {
