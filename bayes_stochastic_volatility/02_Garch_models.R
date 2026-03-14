@@ -1,7 +1,22 @@
 library(MASS)
 library(rugarch)
 
+#----------------------------------------------------------
+#!!Auto regressive plots to check assumptions for AR(1) & Garch
+#----------------------------------------------------------
+ACF_Diagnostics <- function(log_return) {
+  
+  r <- as.numeric(log_return)
+  par(mfrow = c(1,2))
+  acf(r,main = "ACF of Log Returns")
+  acf(r^2, main = "ACF of squared Log Returns")
+  par(mfrow = c(1,1))
+  
+}
+
+#----------------------------------------------------------
 #Fit Normal Garch
+#----------------------------------------------------------
 Fit_Garch_Norm <- function(log_return) {
   r <- as.numeric(log_return)
   
