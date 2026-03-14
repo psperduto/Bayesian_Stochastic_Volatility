@@ -1,21 +1,17 @@
 library(rjags)
 
 #----------------------------------------------------------
-#shorten period where we examine for computation
+#prepare and store data for JAGS
 #----------------------------------------------------------
 Returns_Trim <- function(log_returns, obs) {
-  t <- length
-    returns_trimmed <- tail(log_returns, obs)
-    
-    return(returns_trimmed)
+  y <- as.numeric(tail(log_returns, obs))
+  T <- length(y)
+  jags_data <- list(
+    y = y,
+    T = T
+  )
+  return(jags_data)
 }
-
-
-
-jags_data <- list(
-  y = y, 
-  T = T
-)
 
 sv_model_string <- "
 model {
