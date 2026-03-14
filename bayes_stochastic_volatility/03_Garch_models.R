@@ -1,4 +1,3 @@
-library(MASS)
 library(rugarch)
 
 #----------------------------------------------------------
@@ -31,7 +30,7 @@ Plot_Absolute_Returns <- function(log_return) {
     index(log_return^2),
     abs(as.numeric(log_return^2)),
     type = "l",
-    main = "Absolute Log Returns",
+    main = "Squared Log Returns",
     xlab = "T",
     ylab = "Squared Log Return"
   )
@@ -67,8 +66,11 @@ Fit_Garch_Norm <- function(log_return) {
     model = "GARCH Normal Model",
     spec = specifacations,
     fit = garch_fit_norm,
-    log_likelihood = likelihood(garch_fit_norm)
-  )
+    log_likelihood = likelihood(garch_fit_norm),
+    n_par = length(coef(garch_fit_norm)),
+    sigma_t = sigma(garch_fit_norm),
+    residuals = residuals(garch_fit_norm, standardize = TRUE)
+    )
   return(output)
 }
 
@@ -92,4 +94,19 @@ Plot_GARCH_Volatility <- function(garch_model, log_return) {
   
 }
 
-
+#----------------------------------------------------------
+#plot standardized residuals
+#----------------------------------------------------------
+Plot_GARCH_Residuals <- function(garch_model, log_return) {
+  z_t <- garch_model$residuals
+  t <- index(log_return)[1:length(z_t)]
+  
+  plot(
+    t,
+    z_t,
+    type = "l",
+    main = paste(garch_model$model, "Standardized Residuals"),
+    xlab = "Time",
+    ylab = "Residual"
+  )
+}
