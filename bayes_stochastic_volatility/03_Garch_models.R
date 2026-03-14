@@ -110,3 +110,37 @@ Plot_GARCH_Residuals <- function(garch_model, log_return) {
     ylab = "Residual"
   )
 }
+
+#----------------------------------------------------------
+#Fit t-Garch variation
+#----------------------------------------------------------
+Fit_Garch_t <- function(log_return) {
+  r <- as.numeric(log_return)
+  
+  specifacations <- ugarchspec(
+    variance.model = list(
+      model = "sGARCH",
+      garchOrder = c(1,1)
+    ),
+    mean.model = list(
+      armaOrder = c(0,0),
+      include.mean = FALSE
+    ),
+    distribution.model = "std"
+  )
+  
+  garch_fit_t <- ugarchfit(
+    spec = specifacations,
+    data =r
+  )
+  output <- list(
+    model = "GARCH T-Distribution Model",
+    spec = specifacations,
+    fit = garch_fit_t,
+    log_likelihood = likelihood(garch_fit_t),
+    n_par = length(coef(garch_fit_t)),
+    sigma_t = sigma(garch_fit_t),
+    residuals = residuals(garch_fit_t, standardize = TRUE)
+  )
+  return(output)
+}
