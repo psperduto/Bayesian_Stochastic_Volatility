@@ -15,12 +15,39 @@ ACF_Diagnostics <- function(log_return) {
 }
 
 #----------------------------------------------------------
-#Fit Normal Garch
+#plot absolute value of log returns
+#----------------------------------------------------------
+Plot_Absolute_Returns <- function(log_return) {
+  par(mfrow = c(1,2))
+  plot(
+    index(log_return),
+    abs(as.numeric(log_return)),
+    type = "l",
+    main = "Absolute Log Returns",
+    xlab = "T",
+    ylab = "abs(Log Return)"
+  )
+  plot(
+    index(log_return^2),
+    abs(as.numeric(log_return^2)),
+    type = "l",
+    main = "Absolute Log Returns",
+    xlab = "T",
+    ylab = "Squared Log Return"
+  )
+  par(mfrow = c(1,1))
+}
+
+
+#Fit Normal Garch:----------------------------------------------------------
+#setting the type of autoregressive model to standard symetric
+#garchOrder = c(1,1) is defined for finance situations as in Jacquier et al.
+#armaOrder c(0,0) specifie sthat our means independent of time/index, ie mean is constant
 #----------------------------------------------------------
 Fit_Garch_Norm <- function(log_return) {
   r <- as.numeric(log_return)
   
-  Garch_Normal_Specifacations <- ugarchspec(
+  specifacations <- ugarchspec(
     variance.model = list(
       model = "sGARCH",
       garchOrder = c(1,1)
@@ -33,25 +60,26 @@ Fit_Garch_Norm <- function(log_return) {
   )
   
   garch_fit_norm <- ugarchfit(
-    spec = Garch_Normal_Specifacations,
+    spec = specifacations,
     data =r
   )
   output <- list(
     model = "GARCH Normal Model",
-    spec = Garch_Normal_Specifacations,
+    spec = specifacations,
     fit = garch_fit_norm,
     log_likelihood = likelihood(garch_fit_norm)
   )
   return(output)
 }
 
+#----------------------------------------------------------
 # Plot_GARCH_Volatility
 # Plot fitted conditional volatility from a GARCH model
-
+#----------------------------------------------------------
 Plot_GARCH_Volatility <- function(garch_model, log_return) {
   
   sigma_t <- sigma(garch_model$fit)
-  t <- index(log_return)
+  t <- index(log_return)[1:length(sigma_t)]
   
   plot(
     t,
@@ -65,30 +93,3 @@ Plot_GARCH_Volatility <- function(garch_model, log_return) {
 }
 
 
-# garch analysis, AR1 model
-garch_fit_norm <- ugarchfit(
-  spec = garch_spec_norm,
-  data = SPY_log_return
-)
-garch_fit_norm
-#The Garch by default assumes normal spread but we can specify t
-garch_spec_t <- ugarchspec(
-  variance.model = list(model="sGARCH", garchOrder=c(1,1)),
-  mean.model = list(armaOrder=c(0,0), include.mean=TRUE),
-  distribution.model = "std"
-)
-
-garch_fit_t <- ugarchfit(
-  spec = garch_spec_t,
-  data = SPY_log_return
-)
-
-garch_fit_t
-
-#plot garch model
-garch_vol <- sigma(garch_fit_t)
-
-plot(garch_vol,
-     main="Estimated Volatility (GARCH-t)",
-
-     col="blue")
