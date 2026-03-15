@@ -52,14 +52,15 @@ model {
 #----------------------------------------------------------
 #initialize starting values
 #----------------------------------------------------------
-init_fun <- function(y,T) {
+init_fun <- function(y, T) {
   list(
-    mu = -10,
-    phi = 0.95,
-    tau_eta = 50,
-    h = rep(log(var(y)), T)
+    mu = rnorm(1, -10, 0.5),
+    phi = runif(1, 0.9, 0.99),
+    tau_eta = rgamma(1, 2, 40),
+    h = rep(rnorm(1, -10, 0.3), T)
   )
 }
+
 
 #----------------------------------------------------------
 #Fit JAGS model
@@ -73,16 +74,16 @@ Fit_SV_JAGS <- function(log_returns, obs) {
     data = jags_data,
     inits = function() init_fun(jags_data$y, jags_data$T),
     n.chains = 3,
-    n.adapt = 1000
+    n.adapt = 2000
   )
   
-  update(sv_jags, n.iter = 5000)
+  update(sv_jags, n.iter = 10000)
   
   sv_samples_basic <- coda.samples(
     model = sv_jags,
     variable.names = params_basic,
-    n.iter = 10000,
-    thin = 10
+    n.iter = 30000,
+    thin = 5
   )
   
   output <- list(
