@@ -1,4 +1,4 @@
-#----------------------------------------------------------
+#SCATCH FROM CHAT DONT KEEP!
 #ACF plot for one monitored MCMC parameter
 #example: param = "phi"
 #----------------------------------------------------------
