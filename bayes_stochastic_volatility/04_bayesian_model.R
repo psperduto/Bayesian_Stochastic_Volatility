@@ -29,9 +29,9 @@ SV_Data_list <- function(log_returns, obs) {
 sv_model_string <- "
 model {
   for (t in 1:T) {
-    y[t] ~ dnorm(0, tau_y[t])
-    tau_y[t] <- exp(-h[t])
-  }
+  y[t] ~ dnorm(0, exp(-h[t]))
+}
+
   
   h[1] ~ dnorm(mu, tau_h0)
   tau_h0 <- (1 - phi * phi) * tau_eta
@@ -43,7 +43,7 @@ model {
   mu ~ dnorm(0, 0.01)
   phi ~ dunif(-0.999, 0.999)
 
-  tau_eta ~ dgamma(2.5, 0.025)
+  tau_eta ~ dgamma(0.01, 0.01)
   sigma2_eta <- 1 / tau_eta
   sigma_eta <- sqrt(sigma2_eta)
 }
@@ -54,7 +54,7 @@ model {
 #----------------------------------------------------------
 init_fun <- function(y,T) {
   list(
-    mu = log(var(y)),
+    mu = -10,
     phi = 0.95,
     tau_eta = 50,
     h = rep(log(var(y)), T)
