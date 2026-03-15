@@ -13,6 +13,30 @@ Returns_Trim <- function(log_returns, obs) {
   return(jags_data)
 }
 
+#----------------------------------------------------------
+#store JAGS data list
+#----------------------------------------------------------
+SV_Data_list <- function(log_returns, obs){
+  data_list <- c(
+    Returns_Trim(log_returns,obs),
+    list(
+      mu_0 = 0,
+      tau_mu_0 = 1/100,
+      phi_L = -0.99,
+      phi_U = 0.99,
+      sigma_eta_L = 0.001,
+      sigma_eta_U = 2
+    )
+  )
+  return(data_list)
+}
+
+
+
+
+SV_Data <- function(log_returns, obs) {
+  trimmed_data <- Retru
+}
 sv_model_string <- "
 model {
 
