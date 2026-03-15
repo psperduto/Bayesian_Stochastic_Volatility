@@ -26,7 +26,7 @@ SV_Data_list <- function(log_returns, obs) {
 #----------------------------------------------------------
 #Store the model string for JAGS
 #----------------------------------------------------------
-sv_model_string <- "
+SV_Model_String <- "
 model {
   for (t in 1:T) {
   y[t] ~ dnorm(0, exp(-h[t]))
@@ -65,12 +65,12 @@ init_fun <- function(y, T) {
 #----------------------------------------------------------
 #Fit JAGS model
 #----------------------------------------------------------
-Fit_SV_JAGS <- function(log_returns, obs) {
+Run_SV_JAGS <- function(log_returns, obs) {
   jags_data <- SV_Data_list(log_returns, obs)
   params_basic <- c("mu", "phi", "sigma_eta", "sigma2_eta")
   
   sv_jags <- jags.model(
-    textConnection(sv_model_string),
+    textConnection(SV_Model_String),
     data = jags_data,
     inits = function() init_fun(jags_data$y, jags_data$T),
     n.chains = 3,

@@ -4,7 +4,7 @@ library(moments)
 #----------------------------------------------------------
 #Fit normal model to log returns
 #----------------------------------------------------------
-fit_normal <- function(log_return) {
+Fit_Normal <- function(log_return) {
   log_return <- as.numeric(log_return)
   T <- length(log_return)
   
@@ -28,7 +28,7 @@ fit_normal <- function(log_return) {
 #!! the Cauchy does not have finite moments so we must 
 #approximate this distribution's maximum likelihood
 #----------------------------------------------------------
-fit_cauchy <- function(log_return) {
+Fit_Cauchy <- function(log_return) {
   log_return <- as.numeric(log_return)
   
   T <- length(log_return)
@@ -49,7 +49,7 @@ fit_cauchy <- function(log_return) {
 #----------------------------------------------------------
 #fit the t-dsit to log_returns
 #----------------------------------------------------------
-fit_t <- function(log_return) {
+Fit_Student_T <- function(log_return) {
   log_return <- as.numeric(log_return)
   
   T <- length(log_return)
@@ -79,9 +79,9 @@ fit_t <- function(log_return) {
 #----------------------------------------------------------
 Fit_Distributions <- function(log_return) {
   list(
-    Normal = fit_normal(log_return),
-    Cauchy = fit_cauchy(log_return),
-    T_Distribution = fit_t(log_return)
+    Normal = Fit_Normal(log_return),
+    Cauchy = Fit_Cauchy(log_return),
+    T_Distribution = Fit_Student_T(log_return)
   )
 }
 
