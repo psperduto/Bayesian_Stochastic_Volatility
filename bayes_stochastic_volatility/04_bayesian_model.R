@@ -1,4 +1,5 @@
 library(rjags)
+library(coda)
 
 #----------------------------------------------------------
 #prepare and store data for JAGS
@@ -6,56 +7,39 @@ library(rjags)
 Returns_Trim <- function(log_returns, obs) {
   y <- as.numeric(tail(log_returns, obs))
   T <- length(y)
-  jags_data <- list(
+  output <- list(
     y = y,
     T = T
   )
-  return(jags_data)
+  return(output)
 }
 
 #----------------------------------------------------------
-#store JAGS data list
+# store JAGS data list
 #----------------------------------------------------------
-SV_Data_list <- function(log_returns, obs){
-  data_list <- c(
-    Returns_Trim(log_returns,obs),
-    list(
-      mu_0 = 0,
-      tau_mu_0 = 1/100,
-      phi_L = -0.99,
-      phi_U = 0.99,
-      sigma_eta_L = 0.001,
-      sigma_eta_U = 2
-    )
-  )
+SV_Data_list <- function(log_returns, obs) {
+  data_list <- Returns_Trim(log_returns, obs)
   return(data_list)
 }
 
 
-
-
-SV_Data <- function(log_returns, obs) {
-  trimmed_data <- Retru
-}
+#----------------------------------------------------------
+#Store the model string for JAGS
+#----------------------------------------------------------
 sv_model_string <- "
 model {
-
-  # Observation equation
   for (t in 1:T) {
     y[t] ~ dnorm(0, tau_y[t])
     tau_y[t] <- exp(-h[t])
   }
-
-  # Initial state
+  
   h[1] ~ dnorm(mu, tau_h0)
   tau_h0 <- (1 - phi * phi) * tau_eta
 
-  # State equation
   for (t in 2:T) {
     h[t] ~ dnorm(mu + phi * (h[t-1] - mu), tau_eta)
   }
 
-  # Priors
   mu ~ dnorm(0, 0.01)
   phi ~ dunif(-0.999, 0.999)
 
@@ -64,7 +48,11 @@ model {
   sigma_eta <- sqrt(sigma2_eta)
 }
 "
-init_fun <- function() {
+
+#----------------------------------------------------------
+#initialize starting values
+#----------------------------------------------------------
+init_fun <- function(y,T) {
   list(
     mu = log(var(y)),
     phi = 0.95,
@@ -72,30 +60,43 @@ init_fun <- function() {
     h = rep(log(var(y)), T)
   )
 }
-params_basic <- c("mu", "phi", "sigma_eta", "sigma2_eta")
-sv_jags <- jags.model(
-  textConnection(sv_model_string),
-  data = jags_data,
-  inits = init_fun,
-  n.chains = 3,
-  n.adapt = 1000
-)
 
-update(sv_jags, n.iter = 5000)
+#----------------------------------------------------------
+#Fit JAGS model
+#----------------------------------------------------------
+Fit_SV_JAGS <- function(log_returns, obs) {
+  jags_data <- SV_Data_list(log_returns, obs)
+  params_basic <- c("mu", "phi", "sigma_eta", "sigma2_eta")
+  
+  sv_jags <- jags.model(
+    textConnection(sv_model_string),
+    data = jags_data,
+    inits = function() init_fun(jags_data$y, jags_data$T),
+    n.chains = 3,
+    n.adapt = 1000
+  )
+  
+  update(sv_jags, n.iter = 5000)
+  
+  sv_samples_basic <- coda.samples(
+    model = sv_jags,
+    variable.names = params_basic,
+    n.iter = 10000,
+    thin = 10
+  )
+  
+  output <- list(
+    model = sv_jags,
+    samples = sv_samples_basic,
+    data = jags_data
+  )
+  
+  return(output)
+}
 
-sv_samples_basic <- coda.samples(
-  model = sv_jags,
-  variable.names = params_basic,
-  n.iter = 10000,
-  thin = 10
-)
-
-summary(sv_samples_basic)
-
-plot(sv_samples_basic)
-gelman.diag(sv_samples_basic)
-effectiveSize(sv_samples_basic)
-
+#----------------------------------------------------------
+#
+#----------------------------------------------------------
 params_full <- c("mu","phi","sigma_eta","h")
 sv_samples_full <- coda.samples(
   sv_jags,
