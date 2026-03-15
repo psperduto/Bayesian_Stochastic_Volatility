@@ -1,3 +1,5 @@
+#SCATCH FROM CHAT DONT KEEP!
+
 #==========================================================
 # Run SV Pipeline.R
 # Master script up through Bayesian SV estimation
