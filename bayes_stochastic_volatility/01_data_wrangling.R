@@ -1,5 +1,6 @@
 library(quantmod)
 library(moments)
+
 #pull stock price via quantmod
 #compute log returns for specified ticker on yfinance when we pass the ticker name
 LogReturn <- function(ticker = "SPY") {
@@ -47,4 +48,3 @@ LR_Summary <- function(log_return) {
   )
   return(output)
 }
-
