@@ -41,7 +41,8 @@ LR_Summary <- function(log_return) {
     sd = sd(r),
     skewness = moments::skewness(r),
     kurtosis = moments::kurtosis(r),
-    min_max = c(min(r),max(r)),
+    min = min(r),
+    max = max(r),
     T = length(r)
   )
   return(output)
