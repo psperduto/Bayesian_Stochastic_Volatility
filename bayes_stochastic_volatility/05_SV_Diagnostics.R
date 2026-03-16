@@ -1,3 +1,12 @@
+library(rjags)
+library(ggplot2)
+library(runjags)
+library(coda)
+library(tseries)
+
+
+
+
 #SCATCH FROM CHAT DONT KEEP!
 #ACF plot for one monitored MCMC parameter
 #example: param = "phi"
