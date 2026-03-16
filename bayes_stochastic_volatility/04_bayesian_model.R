@@ -29,7 +29,7 @@ SV_Data_list <- function(log_returns, obs) {
 SV_Model_String <- "
 model {
   for (t in 1:T) {
-  y[t] ~ dnorm(0, exp(-h[t]))
+    y[t] ~ dnorm(0, exp(-h[t]))
 }
 
   
@@ -67,7 +67,7 @@ init_fun <- function(y, T) {
 #----------------------------------------------------------
 Run_SV_JAGS <- function(log_returns, obs) {
   jags_data <- SV_Data_list(log_returns, obs)
-  params_basic <- c("mu", "phi", "sigma_eta", "sigma2_eta")
+  params_basic <- c("mu", "phi", "sigma_eta", "sigma2_eta", "h")
   
   sv_jags <- jags.model(
     textConnection(SV_Model_String),
