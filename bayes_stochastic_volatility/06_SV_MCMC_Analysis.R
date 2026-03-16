@@ -44,3 +44,51 @@ SV_Volatility_Bands <- function(sv_fit) {
   )
   return(output)
 }
+
+#----------------------------------------------------------
+#plot posterior volatility paths
+#----------------------------------------------------------
+SV_Volatility_Plot <- function(sv_fit) {
+  volatility_path <- SV_Volatility_Path(sv_fit)
+  plot(
+    volatility_path,
+    type = "l",
+    main = "Estimated Volatility",
+    ylab = "Volatility"
+  )
+}
+
+#----------------------------------------------------------
+#Plot Volatility vs abs(returns)
+#----------------------------------------------------------
+SV_V_AR_Plot <- function(sv_fit) {
+  returns <- as.numeric(sv_fit$data$y)
+  volatility_path <- SV_Volatility_Path(sv_fit)
+  
+  plot(
+    abs(returns),
+    type = "l",
+    main = "SV MCMC vs Absolute Returns",
+    ylab = "magnitude",
+    col = "darkgrey"
+  )
+  lines(volatility_path, col = 'darkred', lwd =2)
+}
+
+#----------------------------------------------------------
+#Parameter posterior density plots
+#----------------------------------------------------------
+SV_Posterior_Density_Plots <- function(sv_fit) {
+  
+  sv_mcmc <- sv_fit$samples
+  
+  densplot(sv_mcmc[, "mu"],
+           main = "Posterior Distribution of mu")
+  densplot(sv_mcmc[, "phi"],
+           main = "Posterior Distribution of Volatility Persistence")
+  densplot(sv_mcmc[, "sigma_eta"],
+           main = "Posterior Distribution of Volatility Innovation")
+  densplot(sv_mcmc[, "sigma2_eta"],
+           main = "Posterior Distribution of sigma2_eta")
+}
+
