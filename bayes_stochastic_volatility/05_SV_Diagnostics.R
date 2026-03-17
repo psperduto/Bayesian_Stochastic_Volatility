@@ -49,6 +49,18 @@ SV_MCMC_TP <- function(sv_fit) {
 #SV MCMC ACF Plots
 #----------------------------------------------------------
 SV_MCMC_ACF <- function(sv_fit) {
-  sv_mcmc <- SV_MCMC_Object(sv_fit)
-  autocorr.plot(sv_mcmc[,c("mu","phi","sigma_eta","sigma2_eta")])
+  samples_matrix <- as.matrix(sv_fit$samples)
+  
+  keep <- c("mu", "phi", "sigma_eta", "sigma2_eta")
+  keep <- keep[keep %in% colnames(samples_matrix)]
+  
+  old_par <- par(no.readonly = TRUE)
+  on.exit(par(old_par))
+  
+  par(mfrow = c(2, 2), ask = FALSE)
+  
+  for (param in keep) {
+    acf(samples_matrix[, param], lag.max = 50,
+        main = paste("ACF:", param))
+  }
 }
