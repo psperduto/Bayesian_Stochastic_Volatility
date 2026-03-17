@@ -4,15 +4,14 @@
 # Run SV Pipeline.R
 # Master script up through Bayesian SV estimation
 #==========================================================
-
+set.seed(2323)
 rm(list = ls())
 
 #----------------------------------------------------------
-# Load required libraries
+# Load libraries
 #----------------------------------------------------------
 library(quantmod)
 library(moments)
-library(MASS)
 library(rugarch)
 library(rjags)
 library(coda)
@@ -24,101 +23,85 @@ source("01_Data_Wrangling.R")
 source("02_Traditional_Models.R")
 source("03_Garch_Models.R")
 source("04_Bayesian_Model.R")
+source("05_SV_Diagnostics.R")
+source("06_SV_MCMC_Analysis.R")
+source("07_Model_Comparison.R")
 
 #----------------------------------------------------------
-# Set project inputs
+# Pull data
 #----------------------------------------------------------
-ticker <- "SPY"
-obs <- 1000
+spy_data <- LogReturn("SPY")
+
+price <- spy_data$price
+log_return <- spy_data$log_return
 
 #----------------------------------------------------------
-# Step 1: Pull data and compute log returns
+# Fit traditional models
 #----------------------------------------------------------
-data_output <- LogReturn(ticker = ticker)
-
-price <- data_output$price
-log_return <- data_output$log_return
-
-cat("Data loaded successfully.\n")
-cat("Ticker:", ticker, "\n")
-cat("Number of returns:", length(log_return), "\n\n")
+normal_fit <- Fit_Normal(log_return)
+t_fit <- Fit_Student_T(log_return)
+cauchy_fit <- Fit_Cauchy(log_return)
 
 #----------------------------------------------------------
-# Step 2: Fit traditional distribution models
+# Fit GARCH models
 #----------------------------------------------------------
-normal_fit <- Fit_Normal(log_return = log_return)
-cauchy_fit <- Fit_Cauchy(log_return = log_return)
-t_fit <- Fit_Student_T(log_return = log_return)
+garch_norm_fit <- Fit_Garch_Norm(log_return)
+garch_t_fit <- Fit_Garch_t(log_return)
 
-traditional_fits <- list(
-  Normal = normal_fit,
-  Cauchy = cauchy_fit,
-  T_Distribution = t_fit
+#----------------------------------------------------------
+# Fit Bayesian SV model
+#----------------------------------------------------------
+sv_fit <- Run_SV_JAGS(log_return, obs = 1000)
+
+#----------------------------------------------------------
+# MCMC diagnostics
+#----------------------------------------------------------
+sv_summary <- SV_MCMC_Summary(sv_fit)
+sv_ess <- SV_MCMC_Effective_Size(sv_fit)
+sv_gelman <- SV_MCMC_Gelman(sv_fit)
+
+#----------------------------------------------------------
+# SV analysis
+#----------------------------------------------------------
+h_draws <- SV_h_Draws(sv_fit)
+vol_draws <- SV_Volatility_Draws(sv_fit)
+vol_path <- SV_Volatility_Path(sv_fit)
+vol_bands <- SV_Volatility_Bands(sv_fit)
+
+#----------------------------------------------------------
+# Model comparison
+#----------------------------------------------------------
+sv_garch_error <- SV_vs_GARCH_Error(sv_fit, garch_norm_fit)
+
+#----------------------------------------------------------
+# Plots (optional run)
+#----------------------------------------------------------
+SV_MCMC_TP(sv_fit)
+SV_MCMC_ACF(sv_fit)
+
+SV_Posterior_Density_Plots(sv_fit)
+SV_Volatility_Plot(sv_fit)
+SV_V_AR_Plot(sv_fit)
+
+SV_vs_GARCH(sv_fit, garch_norm_fit)
+SV_vs_Returns(sv_fit, garch_norm_fit)
+
+#----------------------------------------------------------
+# Store output
+#----------------------------------------------------------
+SV_Pipeline_Output <- list(
+  price = price,
+  log_return = log_return,
+  normal_fit = normal_fit,
+  t_fit = t_fit,
+  cauchy_fit = cauchy_fit,
+  garch_norm_fit = garch_norm_fit,
+  garch_t_fit = garch_t_fit,
+  sv_fit = sv_fit,
+  sv_summary = sv_summary,
+  sv_ess = sv_ess,
+  sv_gelman = sv_gelman,
+  volatility_path = vol_path,
+  volatility_bands = vol_bands,
+  sv_garch_error = sv_garch_error
 )
-
-traditional_summary <- Distribution_Summary(traditional_fits)
-
-cat("Traditional models fitted.\n\n")
-
-#----------------------------------------------------------
-# Step 3: Fit GARCH models
-#----------------------------------------------------------
-garch_norm_fit <- Fit_Garch_Norm(log_return = log_return)
-garch_t_fit <- Fit_Garch_t(log_return = log_return)
-
-cat("GARCH models fitted.\n\n")
-
-#----------------------------------------------------------
-# Step 4: Fit Bayesian SV model
-#----------------------------------------------------------
-sv_fit <- Run_SV_JAGS(
-  log_returns = log_return,
-  obs = obs
-)
-
-sv_jags <- sv_fit$model
-sv_samples_basic <- sv_fit$samples
-sv_jags_data <- sv_fit$data
-
-cat("Bayesian SV model fitted.\n\n")
-
-#----------------------------------------------------------
-# Step 5: Posterior summary
-#----------------------------------------------------------
-sv_summary <- summary(sv_samples_basic)
-
-cat("Posterior summary created.\n\n")
-
-#----------------------------------------------------------
-# Step 6: Collect outputs
-#----------------------------------------------------------
-sv_pipeline_output <- list(
-  inputs = list(
-    ticker = ticker,
-    obs = obs
-  ),
-  
-  data = list(
-    price = price,
-    log_return = log_return
-  ),
-  
-  traditional_models = list(
-    fits = traditional_fits,
-    summary = traditional_summary
-  ),
-  
-  garch_models = list(
-    garch_normal = garch_norm_fit,
-    garch_t = garch_t_fit
-  ),
-  
-  sv_model = list(
-    model = sv_jags,
-    samples = sv_samples_basic,
-    summary = sv_summary,
-    data = sv_jags_data
-  )
-)
-
-cat("SV pipeline completed successfully through Bayesian estimation.\n")
