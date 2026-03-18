@@ -94,3 +94,36 @@ Run_SV_JAGS <- function(log_returns, obs) {
   
   return(output)
 }
+
+#----------------------------------------------------------
+#Alternative to JAGS Must faster, this is neccesary for computation in forecasting
+#----------------------------------------------------------
+Run_SV_JAGS_Fast <- function(log_returns, obs) {
+  jags_data <- SV_Data_list(log_returns, obs)
+  params_basic <- c("mu", "phi", "sigma_eta", "sigma2_eta", "h")
+  
+  sv_jags <- jags.model(
+    textConnection(SV_Model_String),
+    data = jags_data,
+    inits = function() init_fun(jags_data$y, jags_data$T),
+    n.chains = 2,
+    n.adapt = 500
+  )
+  
+  update(sv_jags, n.iter = 2000)
+  
+  sv_samples_basic <- coda.samples(
+    model = sv_jags,
+    variable.names = params_basic,
+    n.iter = 5000,
+    thin = 5
+  )
+  
+  output <- list(
+    model = sv_jags,
+    samples = sv_samples_basic,
+    data = jags_data
+  )
+  
+  return(output)
+}
