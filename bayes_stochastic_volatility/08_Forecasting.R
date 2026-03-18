@@ -1,12 +1,3 @@
-#----------------------------------------------------------
-# 08_Forecasting.R
-# Rolling one-step-ahead forecast comparison:
-# Bayesian Stochastic Volatility vs Normal GARCH
-#----------------------------------------------------------
-
-#----------------------------------------------------------
-# Load required source files
-#----------------------------------------------------------
 source("03_Garch_Models.R")
 source("04_Bayesian_Model.R")
 
