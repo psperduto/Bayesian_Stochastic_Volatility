@@ -1,4 +1,4 @@
-# Stochastic Volatility Modeling Bayesian Framework
+# Stochastic Volatility Modeling: Bayesian Framework
 
 ## Motivation
 
@@ -10,28 +10,26 @@ Since volatility is not directly observed, it makes sense to model it as a laten
 
 ## Traditional methodology
 
-In practice the Generalized Autoregressive Condition Heteroskedasticity (GARCH) framework is widely accepted as a simple and effective way to model estimate this latent volatility. 
+In practice, the Generalized Autoregressive Conditional Heteroskedasticity (GARCH) framework is widely used as a simple and effective way to estimate time-varying volatility.
 
-The Garch model is a deterministic way to calculate the volatility at a time, T_i, provided with the returns of the T_j, where j<i.
+The GARCH model treats volatility as a deterministic function of past returns and past volatility. At each time \( t \), volatility is computed using previous observations.
 
-The alternative to this is to treat this volatility parameter as a latent stochastic process for which can be modeled with a framework.
+An alternative is to treat volatility as a latent stochastic process that evolves over time rather than a deterministic quantity.
 
 ## General approach
 
-Following the hierarchical model proposed in the paper "Bayesian Analysis of Stochastic Volatility Models" (1994) by Jacquier we build a model following the AR(1) framework, to simulate, estimate, and forecast these volatility densities conditioned all the observed prior returns.
+Following the hierarchical model proposed in "Bayesian Analysis of Stochastic Volatility Models" (1994) by Jacquier et al., we implement a stochastic volatility model where the latent log-volatility follows an AR(1) process.
 
-Utilizing Markov Chain Monte Carlo simulations and metropolis algorithms we can efficiently simulate the posterior densities and create credible intervals to which we may compare with more traditional models.
+We estimate the model using Markov Chain Monte Carlo (MCMC) methods, including Metropolis-based sampling, to obtain posterior distributions for both the model parameters and the latent volatility process.
 
-From these methods we then build a rolling forecasting pipeline estimating the volatility of the next day over a 200 day period for our Garch and Bayesian models to compare relative error.
+Using these estimates, we construct a rolling forecasting framework to predict next-day volatility over a 200-day window. These forecasts are compared against GARCH-based models to evaluate relative performance.
 
 ## The pipeline
 
-In this pipeline we display how normal Gaussian distributions fails to capture the heavy tail characteristics of financial returns data, and why more complex models are necessary.
+We begin by retrieving financial data using the `quantmod` and `yfinance` libraries and computing log returns for a chosen asset.
 
-Pulling data via the quantmod library and yfinance efficiently pull the returns data of a specified ticker name, and transform into a log_return object.
+The return series exhibits near-zero mean with little autocorrelation, while volatility remains highly persistent. We first fit standard GARCH and t-GARCH models to serve as benchmarks.
 
-These log returns exhibit nice qualities most importantly a near zero uncorrelated mean but a very highly correlated volatility. Following the data retrival we then fit the classic Garch and t-Garch deterministic models to model the latent volatility.
+We then fit the Bayesian stochastic volatility model using JAGS, sampling from the posterior distribution of both the AR(1) parameters and the latent volatility \( h_t \).
 
-Utilizing the JAGS library and following the paper by Jacquier we then sequentially simulate the posterior densities of our AR(1) parameters and the latent volatility (h_t) from the conditional distributions.
-
-From these fit Garch and SV bayesian models we forecast the ticker volatility over the last 200 day window and compare relative errors and efficieny.
+Finally, we generate out-of-sample volatility forecasts over a rolling 200-day window and compare performance across models using relative error and efficiency measures.
