@@ -82,7 +82,7 @@ Run_SV_JAGS <- function(log_returns, obs) {
   sv_samples_basic <- coda.samples(
     model = sv_jags,
     variable.names = params_basic,
-    n.iter = 30000,
+    n.iter = 3000,
     thin = 5
   )
   

@@ -1,0 +1,205 @@
+---
+title: "Bayesian Stochastic Volatility Modeling"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+
+# Data
+
+```{r}
+rm(list = ls())
+# Pull Data from quantmod acording to ticker name
+source("01_Data_Wrangling.R")
+raw_data <- LogReturn("SPY")
+log_return <- raw_data$log_return
+```
+
+```{r}
+par(mfrow = c(1,3))
+
+# returns
+Plot_Returns(log_return)
+
+# absolute returns
+plot(
+  index(log_return),
+  abs(as.numeric(log_return)),
+  type = "l",
+  main = "Absolute Returns",
+  xlab = "Time",
+  ylab = "|Return|"
+)
+
+# squared returns
+plot(
+  index(log_return),
+  (as.numeric(log_return))^2,
+  type = "l",
+  main = "Squared Returns",
+  xlab = "Time",
+  ylab = "Return^2"
+)
+
+par(mfrow = c(1,1))
+```
+
+```{r}
+r <- as.numeric(log_return)
+
+xlim <- quantile(r, c(0.02, 0.98))
+
+hist(
+  r,
+  breaks = "FD",
+  probability = TRUE,
+  xlim = xlim,
+  main = "Histogram of Log Returns",
+  xlab = "Log Returns"
+)
+
+mu <- mean(r)
+sigma <- sd(r)
+
+curve(
+  dnorm(x, mean = mu, sd = sigma),
+  col = "blue",
+  lwd = 2,
+  add = TRUE
+)
+```
+
+
+# Traditional Models
+
+```{r}
+source("02_Traditional_Models.R")
+```
+
+```{r}
+fit_models <- Fit_Distributions(log_return)
+```
+
+```{r}
+Distribution_Summary(fit_models)
+```
+
+```{r, fig.width=7, fig.height=4}
+Plot_Models(log_return, fit_models)
+```
+
+```{r, fig.width=5, fig.height=5}
+QQplot_normal_returns(log_return)
+```
+
+
+# Garch Model
+
+```{r}
+source("03_Garch_Models.R")
+```
+
+```{r}
+ACF_Diagnostics(log_return)
+```
+
+```{r}
+garch_norm <- Fit_Garch_Norm(log_return)
+garch_t <- Fit_Garch_t(log_return)
+```
+
+
+```{r}
+GARCH_Summary <- function(garch_model) {
+  data.frame(
+    model = garch_model$model,
+    log_likelihood = garch_model$log_likelihood,
+    n_parameters = garch_model$n_par,
+    omega = coef(garch_model$fit)["omega"],
+    alpha1 = coef(garch_model$fit)["alpha1"],
+    beta1 = coef(garch_model$fit)["beta1"]
+  )
+}
+
+rbind(
+  GARCH_Summary(garch_norm),
+  GARCH_Summary(garch_t)
+)
+```
+
+```{r, fig.width=7, fig.height=4}
+Plot_GARCH_Volatility(garch_norm, log_return)
+```
+```{r, fig.width=7, fig.height=4}
+Plot_GARCH_Residuals(garch_norm, log_return)
+```
+```{r, fig.width=7, fig.height=4}
+Plot_GARCH_Volatility(garch_t, log_return)
+```
+
+```{r, fig.width=7, fig.height=4}
+Plot_GARCH_Residuals(garch_t, log_return)
+```
+
+# Bayesian Stochastic Volatility Model
+
+# Bayesian Stochastic Volatility Model
+
+```{r}
+source("04_Bayesian_Model.R")
+```
+
+```{r}
+obs <- length(log_return)
+sv_fit <- Run_SV_JAGS(log_returns = log_return, obs = obs)
+```
+
+```{r}
+names(sv_fit)
+```
+
+```{r}
+str(sv_fit, max.level = 1)
+```
+```{r}
+sv_fit$data$T
+head(sv_fit$data$y)
+```
+# MCMC Diagnostics
+
+```{r}
+source("05_SV_Diagnostics.R")
+```
+
+```{r}
+mcmc_summary <- SV_MCMC_Summary(sv_fit)
+
+# extract only main parameters
+mcmc_summary$statistics[c("mu", "phi", "sigma_eta", "sigma2_eta"), ]
+
+mcmc_summary$quantiles[c("mu", "phi", "sigma_eta", "sigma2_eta"), ]
+
+params <- c("mu", "phi", "sigma_eta", "sigma2_eta")
+
+summary_table <- cbind(
+  mcmc_summary$statistics[params, ],
+  mcmc_summary$quantiles[params, c("2.5%", "50%", "97.5%")]
+)
+
+summary_table
+```
+
+
+
+```{r, fig.width=8, fig.height=6}
+SV_MCMC_ACF(sv_fit)
+```
+
+
