@@ -236,4 +236,3 @@ SV_V_AR_Plot(sv_fit)
 SV_Posterior_Density_Plots(sv_fit)
 ```
 
-# Forecasting
