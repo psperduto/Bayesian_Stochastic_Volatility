@@ -154,7 +154,7 @@ source("04_Bayesian_Model.R")
 ```
 
 ```{r}
-obs <- length(log_return)
+obs <- 500
 sv_fit <- Run_SV_JAGS(log_returns = log_return, obs = obs)
 ```
 
