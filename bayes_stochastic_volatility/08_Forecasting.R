@@ -217,10 +217,13 @@ Rolling_Forecast_Comparison_Plot <- function(test_returns, sv_roll, garch_roll) 
   test_proxy <- abs(test_returns)
   forecast_index <- 1:length(test_proxy)
   
+  par(mar = c(5, 5, 4, 2))  # Fix margins
+  
   plot(
     forecast_index, test_proxy,
     type = "l",
     lwd = 1.5,
+    col = "black",
     xlab = "Forecast Step",
     ylab = "Volatility",
     main = "Rolling One-Step-Ahead Forecast Comparison"
@@ -232,15 +235,16 @@ Rolling_Forecast_Comparison_Plot <- function(test_returns, sv_roll, garch_roll) 
   lines(forecast_index, garch_roll$garch_vol_forecast, lwd = 2, col = "red")
   
   legend(
-    "topright",
-    legend = c("Proxy |r_t|", "SV Mean Forecast", "SV 95% Bands", "GARCH Forecast"),
+    "top",
+    inset = 0.02,
+    legend = c("Proxy |r_t|", "SV Mean", "SV 95% CI", "GARCH"),
     col = c("black", "blue", "blue", "red"),
     lty = c(1, 1, 2, 1),
     lwd = c(1.5, 2, 1, 2),
-    bty = "n"
+    bty = "n",
+    cex = 0.8
   )
 }
-
 #----------------------------------------------------------
 # Master rolling forecast pipeline
 #----------------------------------------------------------

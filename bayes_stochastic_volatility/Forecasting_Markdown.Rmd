@@ -1,0 +1,54 @@
+---
+title: "Bayesian Stochastic Volatility Forecasting"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Forecasting
+
+```{r}
+source("01_Data_Wrangling.R")
+source("03_Garch_Models.R")
+source("04_Bayesian_Model.R")
+source("08_Forecasting.R")
+```
+
+### Data
+
+```{r}
+raw_data <- LogReturn("AAPL")
+log_return <- raw_data$log_return
+```
+
+```{r}
+test_size <- 50
+window_size <- 500
+```
+
+```{r, results='hide', message=FALSE, warning=FALSE, cache = TRUE}
+roll_results <- Run_Rolling_Forecast_Comparison(
+  log_return = log_return,
+  test_size = test_size,
+  window_size = window_size
+)
+```
+
+```{r}
+roll_results$error_metrics$sv_mse
+roll_results$error_metrics$garch_mse
+
+roll_results$error_metrics$sv_mae
+roll_results$error_metrics$garch_mae
+```
+
+```{r}
+Rolling_Forecast_Comparison_Plot(
+  test_returns = roll_results$test_returns,
+  sv_roll = roll_results$sv_roll,
+  garch_roll = roll_results$garch_roll
+)
+
+```
