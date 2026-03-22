@@ -23,7 +23,7 @@ SV_MCMC_Summary <- function(sv_fit) {
 #Effective sample sizes
 #----------------------------------------------------------
 SV_MCMC_Effective_Size <- function(sv_fit) {
-  sv_mcmc <- SV_MCMC_Object(sv_fit)
+  sv_mcmc <- SV_MCMC_Object(sv_fit)[, c("mu","phi","sigma_eta","sigma2_eta")]
   effective_ss <- effectiveSize(sv_mcmc)
   return(effective_ss)
 }
@@ -32,7 +32,7 @@ SV_MCMC_Effective_Size <- function(sv_fit) {
 #From Gelman and Rubin (1992), to check for convergence
 #----------------------------------------------------------
 SV_MCMC_Gelman <- function(sv_fit) {
-  sv_mcmc <- SV_MCMC_Object(sv_fit)
+  sv_mcmc <- SV_MCMC_Object(sv_fit)[, c("mu","phi","sigma_eta","sigma2_eta")]
   SV_MCMC_Gelman <- gelman.diag(sv_mcmc)
   return(SV_MCMC_Gelman)
 }

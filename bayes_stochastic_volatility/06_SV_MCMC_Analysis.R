@@ -45,6 +45,29 @@ SV_Volatility_Bands <- function(sv_fit) {
   return(output)
 }
 
+SV_Volatility_Bands_Plot <- function(sv_fit) {
+  bands <- SV_Volatility_Bands(sv_fit)
+  x <- seq_along(bands$mean)
+  
+  plot(
+    x, bands$mean,
+    type = "n",
+    ylim = range(c(bands$lower, bands$upper)),
+    main = "Estimated Volatility with 95% Credible Bands",
+    xlab = "Time",
+    ylab = "Volatility"
+  )
+  
+  polygon(
+    c(x, rev(x)),
+    c(bands$lower, rev(bands$upper)),
+    border = NA,
+    col = rgb(0.7, 0.7, 0.7, 0.4)
+  )
+  
+  lines(x, bands$mean, lwd = 2)
+}
+
 #----------------------------------------------------------
 #plot posterior volatility paths
 #----------------------------------------------------------

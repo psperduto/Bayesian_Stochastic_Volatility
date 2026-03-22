@@ -201,5 +201,42 @@ summary_table
 ```{r, fig.width=8, fig.height=6}
 SV_MCMC_ACF(sv_fit)
 ```
+```{r}
+SV_MCMC_Gelman(sv_fit)
+```
+```{r}
+SV_MCMC_Effective_Size(sv_fit)
+```
 
+```{r}
+SV_MCMC_TP(sv_fit)
+```
 
+# SV MCMC Analysis
+
+```{r}
+source("06_SV_MCMC_Analysis.R")
+```
+
+```{r}
+svpath <- SV_Volatility_Path(sv_fit)
+```
+
+```{r}
+SV_Volatility_Plot(sv_fit)
+```
+
+```{r}
+sv_volatility_bands <- SV_Volatility_Bands(sv_fit)
+SV_Volatility_Bands_Plot(sv_fit)
+```
+
+```{r}
+SV_V_AR_Plot(sv_fit)
+```
+
+```{r}
+SV_Posterior_Density_Plots(sv_fit)
+```
+
+# Forecasting
