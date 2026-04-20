@@ -69,7 +69,7 @@ Run_SV_JAGS <- function(log_returns, obs) {
   jags_data <- SV_Data_list(log_returns, obs)
   params_basic <- c("mu", "phi", "sigma_eta", "sigma2_eta", "h")
   
-  sv_jags <- jags.model(
+  sv_jags <- jags.model( # initialization and adapt
     textConnection(SV_Model_String),
     data = jags_data,
     inits = function() init_fun(jags_data$y, jags_data$T),
@@ -77,9 +77,9 @@ Run_SV_JAGS <- function(log_returns, obs) {
     n.adapt = 2000
   )
   
-  update(sv_jags, n.iter = 10000)
+  update(sv_jags, n.iter = 10000) # burn-in
   
-  sv_samples_basic <- coda.samples(
+  sv_samples_basic <- coda.samples( # sampling
     model = sv_jags,
     variable.names = params_basic,
     n.iter = 3000,
@@ -96,7 +96,7 @@ Run_SV_JAGS <- function(log_returns, obs) {
 }
 
 #----------------------------------------------------------
-#Alternative to JAGS Must faster, this is neccesary for computation in forecasting
+#Much faster with lower adapt and burnin, this is necessary for computation in forecasting
 #----------------------------------------------------------
 Run_SV_JAGS_Fast <- function(log_returns, obs) {
   jags_data <- SV_Data_list(log_returns, obs)
@@ -106,7 +106,7 @@ Run_SV_JAGS_Fast <- function(log_returns, obs) {
     textConnection(SV_Model_String),
     data = jags_data,
     inits = function() init_fun(jags_data$y, jags_data$T),
-    n.chains = 2,
+    n.chains = 3,
     n.adapt = 500
   )
   
